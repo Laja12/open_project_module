@@ -48,6 +48,4 @@ resource "aws_lb_target_group_attachment" "openproject" {
   port             = 8080
 }
 
-output "alb_dns_name" {
-  value = aws_lb.openproject_alb.dns_name
-}
+
