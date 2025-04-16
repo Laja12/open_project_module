@@ -1,33 +1,34 @@
-name: open-project
-
+name: 'Terraform Destroy'
+ 
 on:
   workflow_dispatch:
-
+ 
 jobs:
   terraform:
+    name: 'Terraform'
     runs-on: ubuntu-latest
 
     permissions:
       id-token: write
       contents: read
-
+ 
     steps:
-      - name: Checkout code
+      - name: 'Checkout'
         uses: actions/checkout@v2
-
-      - name: Set up AWS credentials
+ 
+      - name: 'Set up Terraform'
+        uses: hashicorp/setup-terraform@v1
+ 
+      - name: 'Configure AWS Credentials'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::838365449755:role/opend-id-connect
-          aws-region: us-east-1  
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.0.0  
-
-      - name: Initialize Terraform
+          aws-region: us-east-1
+ 
+      - name: 'Terraform Init'
         run: terraform init
-
-      - name: Apply Terraform plan
-        run: terraform apply -auto-approve
+      - name: 'Terraform Plan Destroy'
+        run: terraform plan -destroy
+ 
+      - name: 'Terraform Destroy'
+        run: terraform destroy -auto-approve
