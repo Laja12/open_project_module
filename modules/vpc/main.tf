@@ -1,53 +1,49 @@
-resource "aws_vpc" "demo_vpc" {
-  cidr_block = var.vpc_cidr
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+
   tags = {
-    Name = "demo-vpc"
+    Name = "MainVPC"
   }
 }
- 
-resource "aws_internet_gateway" "demo_igw" {
-  vpc_id = aws_vpc.demo_vpc.id
+
+resource "aws_subnet" "public" {
+  count = 2
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
+  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  map_public_ip_on_launch = true
+
   tags = {
-    Name = "demo-igw-gateway"
+    Name = "PublicSubnet-${count.index}"
   }
 }
- 
-resource "aws_route_table" "public_rt1" {
-  vpc_id = aws_vpc.demo_vpc.id
+
+data "aws_availability_zones" "available" {}
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "MainIGW"
+  }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.demo_igw.id
+    gateway_id = aws_internet_gateway.igw.id
   }
+
   tags = {
-    Name = "public-route-table1"
+    Name = "PublicRouteTable"
   }
 }
- 
-resource "aws_route_table_association" "rt_assc_1" {
-  subnet_id      = aws_subnet.public_subnet_a.id
-  route_table_id = aws_route_table.public_rt1.id
+
+resource "aws_route_table_association" "public" {
+  count          = length(aws_subnet.public[*].id)
+  subnet_id      = element(aws_subnet.public[*].id, count.index)
+  route_table_id = aws_route_table.public.id
 }
- 
-resource "aws_route_table_association" "rt_assc_2" {
-  subnet_id      = aws_subnet.public_subnet_b.id
-  route_table_id = aws_route_table.public_rt1.id
-}
- 
-resource "aws_subnet" "public_subnet_a" {
-  vpc_id            = aws_vpc.demo_vpc.id
-  cidr_block        = var.public_subnet_a_cidr
-  availability_zone = var.availability_zone_a
-  tags = {
-    Name = "public-subnet-a"
-  }
-}
- 
-resource "aws_subnet" "public_subnet_b" {
-  vpc_id            = aws_vpc.demo_vpc.id
-  cidr_block        = var.public_subnet_b_cidr
-  availability_zone = var.availability_zone_b
-  tags = {
-    Name = "public-subnet-b"
-  }
-}
- 
+
