@@ -1,5 +1,5 @@
 resource "aws_lb" "openproject_alb" {
-  name               = "openproject-alb"
+  name               = "focalcord-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_security_group_id]
@@ -8,12 +8,12 @@ resource "aws_lb" "openproject_alb" {
   enable_deletion_protection = false
 
   tags = {
-    Name = "OpenProject-ALB"
+    Name = "focalcord-ALB"
   }
 }
 
 resource "aws_lb_target_group" "openproject_tg" {
-  name     = "openproject-tg"
+  name     = "focalcord-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
